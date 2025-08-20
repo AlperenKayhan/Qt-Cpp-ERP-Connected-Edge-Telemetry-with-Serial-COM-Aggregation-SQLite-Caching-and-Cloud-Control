@@ -281,7 +281,7 @@ various parameters. We received the session ID from inside from text file, which
 recorded locally inside the device. The reason that we use the same seassionID, it 
 will overload the ERP system with too many sessionIDs. If that is the case, then our ERP system will kill the sessionIDs 
 automatically. Some names may be inconsistent due to not sharing company methods in detail.*/
-    QUrl u("https://devSampllle.mepsan.com.tr/deicev/DevicevOpen"); // -> Sample Names
+    QUrl u("https://devSampllle.san.com.tr/deicev/DevicevOpen"); // -> Sample Names
     QUrlQuery q;
     q.addQueryItem("pts", QString::number(QDateTime::currentMSecsSinceEpoch()));
     q.addQueryItem("S[S]", session); // seassion İd that we store on device
@@ -334,7 +334,7 @@ in order for the ERP system to understand. */
     filePart->setParent(multi);
     multi->append(part);
 
-    QNetworkRequest req(QUrl("https://devSampllle.mepsan.com.tr/dl/DeviceLogUpload"));// -> Sample Name
+    QNetworkRequest req(QUrl("https://devSampllle.san.com.tr/dl/DeviceLogUpload"));// -> Sample Name
     req.setRawHeader("Cookie", QByteArray("S=") + sessionId.toUtf8());
     req.setRawHeader("sys_objects_name", "alperen_test"); //raw header name given as that way to recongnize it is a test device.
     req.setRawHeader("p_devices_id", devicesID.toUtf8());
