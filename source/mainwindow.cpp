@@ -167,19 +167,21 @@ void MainWindow::onResetDatabase()
     tableView->scrollToTop();
     appendLog("# Database reset and simulation stopped.");
 }
-void MainWindow::onGetParameters(){
+
+void MainWindow::onGetParameters()
+{/* it is a button call function that calls Parameters from the client */
     client->requestParameters();
 }
 void MainWindow::onReboot()
-{
+{/*it is a button call function that reboots the COMS and shows the newer COM list on COM select */
     appendLog("# Rebooting COM ports...");
-    client->rebootComPorts();
-    QTimer::singleShot(400, this, &MainWindow::refreshPortList);
+    client->rebootComPorts();//reseting as function 
+    QTimer::singleShot(400, this, &MainWindow::refreshPortList);//reseting as on screeen
 }
 
-
 void MainWindow::onPortChoiceChanged(int idx)
-{// Re handle buttons only when a valid mode is chosen
+{/* When the port is selected as a simulation or a specific COM. Then, it will also update 
+    the states of the buttons that need to be applicable. */
     const bool enable = (idx >= 1);
     startSensorButton->setEnabled(enable);
     stopSensorButton->setEnabled(enable);
@@ -188,6 +190,7 @@ void MainWindow::onPortChoiceChanged(int idx)
     sendLogsButton->setEnabled(enable);
     rebootButton->setEnabled(enable);
 
+    //Setting the COM indexes
     if (idx == 0) { // Idle
         client->comUseIdle();
         appendLog("# Mode: Select a port / idle");
@@ -204,14 +207,15 @@ void MainWindow::onPortChoiceChanged(int idx)
 
 }
 
-void MainWindow::messageHandler(QtMsgType t,const QMessageLogContext&,const QString &m){
+void MainWindow::messageHandler(QtMsgType t,const QMessageLogContext&,const QString &m)
+{/* Handles the message that will be shown on the Device message screen */
     QString p;
     switch(t){ case QtDebugMsg: p="DEBUG: ";break; case QtWarningMsg: p="WARNING: ";break; case QtCriticalMsg: p="CRITICAL: ";break; case QtFatalMsg: p="FATAL: ";break; default: p.clear(); }
     if(s_instance) s_instance->appendLog(p+m);
 }
 
 void MainWindow::refreshPortList()
-{
+{/* Refreshes the POrt list to choose*/
     const QString prev = portCombo->currentText();
 
     const QStringList base = { "Select Port", "Simulation"};
