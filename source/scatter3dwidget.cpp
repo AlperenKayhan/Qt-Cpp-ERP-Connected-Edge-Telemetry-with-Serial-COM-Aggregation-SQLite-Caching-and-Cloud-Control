@@ -1,7 +1,9 @@
 #include "scatter3dwidget.h"
 #include <algorithm>
 #include <GL/gl.h> //OpenGL
-
+/* For further knowledge of the graph generation, you may also check this link out on how it will proceed:
+    https://doc.qt.io/qt-6/qml-qtdatavisualization-scatter3d.html
+*/
 Scatter3DWidget::Scatter3DWidget(QWidget *parent): QOpenGLWidget(parent)
     ,m_maxX(1.0f), m_maxY(1.0f), m_maxZ(1.0f)
     ,m_rotX(0.0f), m_rotY(0.0f)
