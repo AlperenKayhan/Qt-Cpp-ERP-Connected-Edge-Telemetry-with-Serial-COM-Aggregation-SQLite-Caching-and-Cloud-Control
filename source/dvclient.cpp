@@ -28,7 +28,7 @@ DvClient::DvClient(QObject *parent)
 
 DvClient::~DvClient()
 {/*DESTRUCTOR: When we are done with using the Program, it will stop ping (heartbeat) and close the socket
-As well as; delete the port manager */
+As well as, delete the port manager */
     pingTimer.stop();
     socket.close(); // ensures no pending textMessageReceived later
     if (m_portManager) m_portManager->stopAll();
@@ -186,7 +186,7 @@ in the raw data format. Thus, this function also transforms that data into our m
             QString cmd = inner.value("f").toString();
 
             if (cmd == "send_logs") 
-            {/* It is a command that calls the uploadding recorded sql file to the ERP system */
+            {/* It is a command that calls the uploading recorded SQL file to the ERP system */
                 qInfo() << "==> LOGs will be uploading:";
                 uploadLogFile();
             }
@@ -195,7 +195,7 @@ in the raw data format. Thus, this function also transforms that data into our m
                 requestParameters();
             }
             else if (cmd == "reboot") 
-            {/*Command that reboot the device which, also stops the sensor reading and resets the Local DataBase */
+            {/*Command that reboots the device, which also stops the sensor reading and resets the Local Database */
                 qInfo() << "==> Reboot Received";
                 resetDatabase();
                 qInfo() << "  DB Reseted";
@@ -203,27 +203,27 @@ in the raw data format. Thus, this function also transforms that data into our m
                 QCoreApplication::exit(0);
             }
             else if (cmd == "send_msg_log")
-            {/*Shows the message that sent by the ERP system. */
+            {/*Shows the message that was sent by the ERP system. */
                 qInfo() << "==> MSG:" << inner.value("msg").toString();
             }
             else if (cmd == "changed_parameters")
-            {/* Allowed to start sensor readimng remotly from ERP system */
+            {/* Allowed to start sensor reading remotely from ERP system */
                 qInfo() << "\n\nWARNING: System UNSTABLE";
                 ErrorSimulationSentinelVal = 1;
             }
             else if (cmd == "ping")
-            {//Sending a legit ping from ERP that gave an response
+            {//Sending a legit ping from ERP that gave a response
                 onPingTimeout();
             }
             else if (cmd == "refresh")
-            {/* Have similar Usage with reboot, on future updates it will get more abilities.
-                it will allowed us to reboot the COM ports on the ERP system.*/
+            {/* Have similar Usage with reboot, on future updates, it will get more abilities.
+                it will allow us to reboot the COM ports on the ERP system.*/
                 //resetDatabase();
                 ErrorSimulationSentinelVal = 0;
                 rebootComPorts();
                 //setErroSimulation_LOW();
             }
-            else {//Unknown command handler, if there will be an Unknown command recieved from ERP system.
+            else {//Unknown command handler, if there will be an Unknown command is received from the ERP system.
                 qWarning() << "Unknown Command:" << cmd;
             }
         }
@@ -251,9 +251,9 @@ void DvClient::updateDistance(float distance)
 }
 
 void DvClient::requestParameters()
-{/*Showing the device parameters that listed like seassionID, CorpsID, LocationID,
-IP and MAC. Thus, MAC and IP getted by using "getNetworkInfo()" function then 
-spearete the pairs as IP and MAC as first and second pair*/
+{/*Showing the device parameters that are listed like sessionID, CorpsID, LocationID,
+IP and MAC. Thus, MAC and IP are obtained by using the "getNetworkInfo()" function,then 
+separate the pairs as IP and MAC as first and second pair*/
     QPair<QString, QString> pair = getNetworkInfo();
     QString ip  = pair.first;
     QString mac = pair.second;
@@ -277,10 +277,10 @@ void DvClient::onPingTimeout()
 
 QString DvClient::buildDvOpUrl(const QString &session)
 {/* to send an open request to the database, we need to first build our URL with
-various parameters. We recieved the seasssionID from inside from text file which, is 
-recorded on locally inside the device. The reason that we use the same seassionID, it 
-will overloads the ERP system with too many seassionIDs, if that is the case then our ERp system will kill the seasssionIDs 
-automatically.Some names may be inconsistent due to not sharing company methods in detail.*/
+various parameters. We received the session ID from inside from text file, which is 
+recorded locally inside the device. The reason that we use the same seassionID, it 
+will overload the ERP system with too many sessionIDs. If that is the case, then our ERP system will kill the sessionIDs 
+automatically. Some names may be inconsistent due to not sharing company methods in detail.*/
     QUrl u("https://devSampllle.mepsan.com.tr/deicev/DevicevOpen"); // -> Sample Names
     QUrlQuery q;
     q.addQueryItem("pts", QString::number(QDateTime::currentMSecsSinceEpoch()));
@@ -288,12 +288,12 @@ automatically.Some names may be inconsistent due to not sharing company methods 
     q.addQueryItem("S[ptof]", "180"); // essential local values
     q.addQueryItem("S[country]", "225"); // essential local values
     q.addQueryItem("S[lang]", "tr"); // essential local values
-    q.addQueryItem("S[serial_no]", "251306200097"); // Device serial ID that needs to be recorded on ERP to recognize by it.
+    q.addQueryItem("S[serial_no]", "251306200097"); // Device serial ID that needs to be recorded on ERP to be recognized by it.
     q.addQueryItem("S[serial_no_hw]", "724564889999");
     q.addQueryItem("d_short_code", "kodxmcu_avenda_lindo_01"); //Device name -> important for ERP to recognize
     q.addQueryItem("d_firmware", "kodxmcu_avenda_lindo_01"); //Device name -> important for ERP to recognize
-    q.addQueryItem("d_mac_id", "00:30:18:03:26:88"); //Unique Device MAC Address, which is a specified ip on this context
-    q.addQueryItem("d_local_ip", "192.168.5.172"); //Unique Device Local IP Address, which is a specified ip on this context
+    q.addQueryItem("d_mac_id", "00:30:18:03:26:88"); //Unique Device MAC Address, which is a specified IP on this context
+    q.addQueryItem("d_local_ip", "192.168.5.172"); //Unique Device Local IP Address, which is a specified IP on this context
     q.addQueryItem("d_oper", "Prod");
     q.addQueryItem("d_mdl_id", "9100200");
     q.addQueryItem("d_sites_id", "9100200");
@@ -302,8 +302,8 @@ automatically.Some names may be inconsistent due to not sharing company methods 
 }
 
 void DvClient::uploadLogFile()
-{/* Function that allowed us to upload our local database values on to the ERP system with converting the SQL reading as JSON format
-in order for the ERP system to undetrstand. */
+{/* Function that allowed us to upload our local database values onto the ERP system with converting the SQL reading into JSON format
+in order for the ERP system to understand. */
     QSqlQuery query("SELECT timestamp, level, distance, xn FROM warnings");
     QJsonArray logs;
     while (query.next()) {
@@ -353,8 +353,8 @@ in order for the ERP system to undetrstand. */
 }
 
 QPair<QString, QString> DvClient::getNetworkInfo()
-{/* Function that provide our network Info as two paired string. 
-    -Which after the reading*/
+{/* Function that provides our network Info as two paired strings. 
+    -Which, after the reading*/
     for (auto iface : QNetworkInterface::allInterfaces()) {
         if (!(iface.flags() & QNetworkInterface::IsUp) || (iface.flags() & QNetworkInterface::IsLoopBack)) continue;
         for (auto entry : iface.addressEntries()) {
@@ -366,7 +366,7 @@ QPair<QString, QString> DvClient::getNetworkInfo()
 }
 
 void DvClient::loadSession()
-{/* This function allowed us to pull the our pre recorded seassionID*/
+{/* This function allowed us to pull our pre-recorded session ID*/
     QString file = QCoreApplication::applicationDirPath() + "/sessionID.txt";
     QFile f(file);
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -376,10 +376,10 @@ void DvClient::loadSession()
 }
 
 void DvClient::saveSession()
-{/* it is a function that allowed us to load our seassionID on seassionID text file.
-    NOTE that, when this code first run in a new device it will generate the seassionID once then later, 
-    Upload that generated file to the text file. It will done once and then we used later and later again.
-    As long as our .txt file exists. If the file does not exist also it will generate the file as fail save.
+{/* it is a function that allows us to load our sessionID into the sessionID text file.
+    NOTE that, when this code is first run on a new device, it will generate the sessionID once, then later, 
+    Upload that generated file to the text file. It will be  done once, and then we will use it later and later again.
+    As long as our .txt file exists. If the file does not exist also it will generate the file as fail fail-safe.
     */ 
     QString file = QCoreApplication::applicationDirPath() + "/sessionID.txt";
     QFile f(file);
@@ -389,7 +389,7 @@ void DvClient::saveSession()
 }
 
 void DvClient::setErrorSimulation(bool enable)
-{/*A simple if else condition that wheather our error sentinel value unlocked or not. */
+{/*A simple if-else condition that determines whether our error sentinel value is unlocked or not. */
     ErrorSimulationSentinelVal = enable ? 1 : 0;
 }
 
@@ -399,17 +399,17 @@ void DvClient::setErroSimulation_LOW()
 }
 
 void DvClient::rebootComPorts()
-{/* This reboot condition that reboot our COM ports if there is a another device has connected or not.
-    Which, it is a need due to operator test multiple device.*/
+{/* This reboot condition that reboots our COM ports if there is another device has connected or not.
+    It is a need due to the operator testing multiple devices.*/
     if (m_portManager)
         m_portManager->reloadPorts();
 }
 
-void DvClient::comUseIdle() { if (m_portManager) m_portManager->setModeIdle(); }// Setting the code on Idle which, also start of the code as well on Idle state
+void DvClient::comUseIdle() { if (m_portManager) m_portManager->setModeIdle(); }// Setting the code on Idle, which also starts the code as well on Idle state
 void DvClient::comUseSimulationOnly() { if (m_portManager) m_portManager->setModeSimulation(); } // Use the simulation value.
 
 void DvClient::comUseSinglePort(const QString &p)
-{/*Setting for single Port usage send with the setted version we can start to read to port and generate our threads according to that. */
+{/*Setting for single Port usage send with the setted version, we can start to read from the port and generate our threads according to that. */
     if (m_portManager)
         m_portManager->setModeSingle(p);
 }
