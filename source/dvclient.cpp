@@ -18,7 +18,7 @@
 DvClient::DvClient(QObject *parent)
     : QObject(parent)
     , m_portManager(new ComPortManager(this, this))
-{/* DvClient main which handles the websocket connections betweeen ERP system and the Project. */
+{/* DvClient main, which handles the websocket connections between the ERP system and the Project. */
     loadSession();
     connect(&http, &QNetworkAccessManager::finished, this, &DvClient::onHttpFinished);
     connect(&socket, &QWebSocket::textMessageReceived, this, &DvClient::onSocketTextMessageReceived);
@@ -27,7 +27,7 @@ DvClient::DvClient(QObject *parent)
 }
 
 DvClient::~DvClient()
-{/*DESTRUCTOR: When we are done with using the Program it will stop ping (heartbeat) and close the socket
+{/*DESTRUCTOR: When we are done with using the Program, it will stop ping (heartbeat) and close the socket
 As well as; delete the port manager */
     pingTimer.stop();
     socket.close(); // ensures no pending textMessageReceived later
@@ -36,8 +36,8 @@ As well as; delete the port manager */
 }
 
 QStringList DvClient::serialPorts() const
-{/* This function handles Wheather we have valid valid ComPortManager instance or not.
-With asking the port available or not. if that is not the case; function will return empty string */
+{/* This function handles whether we have a valid ComPortManager instance or not.
+By asking whether the port is available or not. if that is not the case; function will return empty string */
     // If we have a valid ComPortManager instance, ask it for available ports
     if (m_portManager) {
         return m_portManager->availablePorts();
@@ -49,7 +49,7 @@ With asking the port available or not. if that is not the case; function will re
 
 
 bool DvClient::initDatabase()
-{/* Here we are initilaizing the SQL data base for warnings; to make local storage of our values. */
+{/* Here we are initializing the SQL database for warnings, to make local storage of our values. */
     db = QSqlDatabase::addDatabase("QSQLITE"); // "QSQLite" is the Qt version of SQLite
     db.setDatabaseName(QCoreApplication::applicationDirPath() + "/warnings.db");//Setting DB name
     if (!db.open()) {// if not open handle
@@ -65,7 +65,7 @@ bool DvClient::initDatabase()
           distance  REAL    NOT NULL,
           xn        REAL    NOT NULL
         )
-    )")) {
+    )")) {/* If the table does not exist, it will generate one according  to the given format*/
         qWarning() << "Failed to create table:" << q.lastError().text();
         return false;
     }
@@ -74,7 +74,8 @@ bool DvClient::initDatabase()
 }
 
 void DvClient::start()
-{
+{/* It is a function that starts the device. It will first generate the URL that we need using the "buildDvOpURL" function.
+With the generated URL, we can send our open Request to the ERP system and fetch our session.*/
     QString url = buildDvOpUrl(sessionId);
     qDebug() << "Fetching session via:" << url;
     http.get(QNetworkRequest(QUrl(url)));
@@ -105,26 +106,35 @@ void DvClient::onHttpFinished(QNetworkReply *reply)
 }
 
 void DvClient::onSocketTextMessageReceived(const QString &msg)
-{
-    if (msg.startsWith('0')) { socket.sendTextMessage("40"); return; }
+{/* It is where we process the message that we received from the ERP system. The message itself is 
+in the raw data format. Thus, this function also transforms that data into our message.*/
+    // SocketIO handshake protocol
+    if (msg.startsWith('0')) { socket.sendTextMessage("40"); return; } 
     if (msg == "2")        { socket.sendTextMessage("3");  return; }
     if (msg == "3")        { return; }
 
-    if (msg.startsWith("40") && !registered) {
+    if (msg.startsWith("40") && !registered) {// Registration processes step
         QJsonArray reg{ "r", QJsonObject{{"n", sessionId}, {"r","dev"}} };
         socket.sendTextMessage("42" + QJsonDocument(reg).toJson(QJsonDocument::Compact));
         registered = true;
-        pingTimer.start(5000);
+        pingTimer.start(5000); // Condition that make our registration allive
         return;
     }
 
-    if (msg.startsWith("42")) {
+    if (msg.startsWith("42")) 
+    {/* This part handles the true event of the message, Which initialy process meseage that we recieved 
+        from erp Then, we need to convert into QbyteArray which becomes our raw reading to be proceesed.
+        then we pulled our ev data which message string to be seen. It can be "pong" or "m*(message) or 
+        various other depending on what ERP sends*/
         QByteArray raw = msg.mid(2).toUtf8();
         auto arr = QJsonDocument::fromJson(raw).array();
         QString ev = arr.at(0).toString();
 
         if (ev == "pong") {
-            if (ErrorSimulationSentinelVal) {
+            if (ErrorSimulationSentinelVal) 
+            {/*This heartbeat implementation is very valuable to the ERP system to keep the device open
+                because, if there is no response after a certain amount of time ERP system will shut down the device.
+                So, every 5 seconds, ERP sends a tick to the device device sends a ping*/
                 double dist = (comSentinel ? QRandomGenerator::global()->generateDouble() * 190.0 + 10.0
                                            : this->currentDistance);
                 double t  = 7.0 * (dist * 10.0) + 3.0;
