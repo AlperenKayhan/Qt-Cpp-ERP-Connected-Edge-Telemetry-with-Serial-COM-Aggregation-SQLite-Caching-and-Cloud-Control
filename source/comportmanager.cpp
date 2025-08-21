@@ -72,68 +72,80 @@ void ComPortManager::stopAll()
 }
 
 void ComPortManager::startAll()
-{
+{/* Here is a function that handles the condition of our state, and according to that, it will start the weather for the 
+chosen COM or Simulation. Thus, we can also choose to stay in the Idle position. If we needed. Likewise, when the code 
+starts to run, initially, it will stay in Idle.
+*/
     m_openCount = 0;
 
     if (m_mode == Mode::Idle)
-    {//burda bir şey yapmıyok açılışta sabit kalması için
-        //Idle state
+    {/* It is the Idle state in which we update the "setCOMSentinel()" value to be zero from the client. */
         m_client->setCOMSentinel(0);
         return;
     }
 
     if (m_mode == Mode::SimulationOnly)
-    {//selection for error sim
+    {/* It is the Simulation state in which we generate our random values to test our other structure parameters.
+        For future implementation on device side, we plan to add local sensor that reads the values on device. Thus, 
+        the operator will test with his hand or something like that. The reason for doing that is that,
+        depending on the device, we may get some zero readings, but there are some issues with the fan blades. It  
+        allowed the  operator to be sure.*/
         m_client->setCOMSentinel(1);
         emit allPortsClosed();
         return;
     }
 
     if (m_mode == Mode::SinglePort)
-    {//Ensouring that single port is working not multiple as same time
+    {/* Here we are ensuring that the single port is working, not multiple COMs at the same time.
+        After we can start to make our single port readings */
         if (m_selectedPort.isEmpty())
-        {
+        {/* Whether the selected port is empty or not. If it is empty, then we can emit it that
+            allportCloses and set the COM sentinel as one. */
             emit allPortsClosed();
             m_client->setCOMSentinel(1);
             return;
         }
 
-        ComThread *thread = new ComThread(m_selectedPort, this);
-        const QString portName = m_selectedPort; // capture by value for safety
-        thread->setBaudRate(QSerialPort::Baud115200);
-        connect(thread, &ComThread::portOpened, this, &ComPortManager::onPortOpened);
+        ComThread *thread = new ComThread(m_selectedPort, this); /* Allocating a new thread for our new COM. */ 
+        const QString portName = m_selectedPort; //capturing the portname
+        thread->setBaudRate(QSerialPort::Baud115200); //Setting our baud rate, which we are gonna read from our ESP32
+        
+        /*######### Thread Connections - Start #########*/
+        /* We are making the requirements connections to proceed with our COM readings. Which we can see portOpen and portFailed
+        distanceReceived and the parseError. and thread finish conditions.*/
+        connect(thread, &ComThread::portOpened, this, &ComPortManager::onPortOpened); //Making the requirment connections
         connect(thread, &ComThread::distanceReceived, this, &ComPortManager::onDistance);
         connect(thread, &ComThread::parseError, this, [portName](const QString &line){
             qWarning() << "error on" << portName << ":" << line;
         });
-
         connect(thread, &ComThread::portOpenFailed, this, &ComPortManager::onPortOpenFailed);
         connect(thread, &QThread::finished, this, &ComPortManager::onThreadFinished);
-        thread->start();
+        /*######### Thread Connections - End #########*/
+        
+        thread->start(); // after setting the connections, we can start the thread.
         m_threads.append(thread);
+        
         if (m_openCount == 0)
-        {// will flip to 0->1 on portOpened, setting as open for current port
+        {// will flip to 0->1 on portOpened, setting as open for the current port
             m_client->setCOMSentinel(1);
         }
         return;
     }
 
     if (m_openCount == 0) {
-        emit allPortsClosed();/*ne idle ne sibgleport ne simulationonly, thre
-        which, means if the user re select "select port" on COMs closed all the existing coms
+        emit allPortsClosed();
+        /*which means if the user re-selects "select port" on COMs, close all the existing COMs
         and their corresponding thread*/
         m_client->setCOMSentinel(1);
     }
 }
 
 void ComPortManager::clearAll()
-{
+{/* Before clearing the threads, we need to stop the thread and put it in wait mode.*/
     for (ComThread *thread : m_threads) {
         qDebug() << "Stopping: " << thread->objectName();
         thread->stop();//   m_running = false;
         thread->wait();//   QThread in-build function
-        /*burada şöyle düşündüm her ne kadar thread yerine başka bir thread kullanıyor olsada, var olan threadin silinmesi yerine bekletilmesi
-        gerekiyor. Zira; aynı thread tekrar kullanılabilir*/
         qDebug() << "Stopped: " << thread->objectName();
         delete thread;// Threadi şimdi siliyoruyz,
     }
@@ -141,7 +153,9 @@ void ComPortManager::clearAll()
 }
 
 void ComPortManager::onPortOpened(const QString &portName)
-{
+{/* After calling the onPortOpened, we increment the m_openCount, and 
+    set "m_client->setCOMSentinel()" to 0. After that, it will say it 
+    On the system chat, the port is opened and a name is assigned to it. */
     ++m_openCount;
     m_client->setCOMSentinel(0);
     emit anyPortOpened();
@@ -149,18 +163,19 @@ void ComPortManager::onPortOpened(const QString &portName)
 }
 
 void ComPortManager::onDistance(float distance)
-{//mesafe updateleme
+{/* Getting read distance and updating the distance value from the client side */
     m_client->updateDistance(distance);
 }
 
 void ComPortManager::onPortOpenFailed(const QString &err)
-{//kullanılmıyor ama dursun yinede ilerde bir şey eklenme durumu için
+{/* Right now, we are not using it*/
     qWarning() << "Failed to open port:" << err;
 }
 
 void ComPortManager::onThreadFinished()
-{
-    if (m_openCount > 0) --m_openCount; else m_openCount = 0; //orjinal "m_openCount--;" chat sordum böyle yap dedi
+{/* When the thread value finishes, does the count of the threads drop below 0
+    ergo, "m_openCount".  setComSentinel has become 0, and all ports are closed.*/ 
+    if (m_openCount > 0) --m_openCount; else m_openCount = 0; 
     if (m_openCount < 0) {
         emit allPortsClosed();
         m_client->setCOMSentinel(0);
