@@ -1,6 +1,7 @@
 #include "comthread.h"
 #include <qdebug.h>
 
+/* Good old thread implemetation. */
 ComThread::ComThread(const QString &portName, QObject *parent)
     : QThread(parent), m_portName(portName) {
     setObjectName(QStringLiteral("ComThread[%1]").arg(portName));
