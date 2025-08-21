@@ -5,17 +5,20 @@
 #include <QDebug>
 
 ComPortManager::ComPortManager(DvClient* client, QObject* parent): QObject(parent), m_client(client)
-{//başlangıç için bir reload at
+{/* Here is my COM thread ports main, we firstly for from  client and parent form DvClient AND comthread respectivlly.
+    After that, we call the "reloadPorts" function to reload our ports. */
+    //başlangıç için bir reload at
     reloadPorts();
 }
 
 ComPortManager::~ComPortManager()
-{
+{/* DESTRUCTOR: this will terminate the class and call the "clearAll()" function for precaution.
+    By calling that function, we can safely clear our threads. */
     clearAll();
 }
 
 QStringList ComPortManager::availablePorts() const
-{
+{/* It is a function that shows us the available ports on the device that are usable in our context*/
     QStringList out;
     const auto ports = QSerialPortInfo::availablePorts();
     //portları oports kaydetiyoruz//COMlarda var olanlarıın numaralarını ports kaydetir
@@ -24,44 +27,47 @@ QStringList ComPortManager::availablePorts() const
 }
 
 void ComPortManager::setModeIdle()
-{/*From the start our code will automatically start on Idle state,
-    however; to see the existing ports, we do relod operation*/
+{/*From the start, our code will automatically start in Idle state,
+    However, to see the existing ports, we do a reload operation*/
     m_mode = Mode::Idle;
     reloadPorts();
 }
 
 void ComPortManager::setModeSingle(const QString &portName)
-{//chose one port, not work more than one
+{/* This function allowed us to set our reading to single mode. Thus, it set the chosen 
+portName to generate its unique thread. After that, we reload our ports.*/
     m_mode = Mode::SinglePort;
     m_selectedPort = portName;
-    reloadPorts();
+    reloadPorts(); 
 }
 
 void ComPortManager::setModeSimulation()
-{//sim'e gir
+{/* This function allowed us to set our readings as simulation ones, which is a test condition
+with randomly generated values. After that, we reload our ports. */
     m_mode = Mode::SimulationOnly;
     reloadPorts();
 }
 
 void ComPortManager::reloadPorts()
-{//renew the ports, and delete the existing ones after that call it again
+{//renew the ports, and delete the existing ones after that, call it again.
     clearAll();
     startAll();
 }
 
 void ComPortManager::stopAll()
 {
-    /*Normally direct existence of clearAll() would be enough. However, in dvClient we re-need to use clearAll on some areas
-     ,importantly after the dvclient got updated. Thus, rather calling "~", we create stop all redo similar process
-        -> Basically, for code clearty
+    /*Normally direct existence of clearAll() would be enough. However, in dvClient, we need to use clearAll on some areas, 
+    importantly, after the dvClient has been updated. Thus, rather than calling "~", we stop all redo similar processes.
+    Basically, for code clarity
     */
+    
     /*
-     * Divice clientta çağrılıyor
-    DvClient::~DvClient()
-    {
-        m_portManager->stopAll();
-        delete m_portManager;
-    }*/
+        DvClient::~DvClient()
+        {
+            m_portManager->stopAll();
+            delete m_portManager;
+        }
+    */
     clearAll();
 }
 
