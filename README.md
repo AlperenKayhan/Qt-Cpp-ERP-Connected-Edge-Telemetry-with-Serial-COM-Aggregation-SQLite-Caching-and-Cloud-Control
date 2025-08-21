@@ -26,13 +26,5 @@ A production-style Qt/C++ edge client that ingests newline-delimited sensor data
 ### Prerequisites
 - **Qt 6.x** (tested with 6.9.x) with QtWidgets, QtSerialPort, QtNetwork, QtWebSockets, QtSql
 - **CMake 3.21+**
-- **Ninja** (optional but recommended)
-- **OpenSSL 3** runtime for HTTPS/WSS (deployment)
 
-### Windows (MinGW 64-bit)
-```bat
-git clone <your-repo-url> IRP-Edge-Qt
-cd IRP-Edge-Qt
-cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="C:\Qt\6.9.1\mingw_64"
-cmake --build build --config Release
-build\IRPEdgeQt.exe
+
