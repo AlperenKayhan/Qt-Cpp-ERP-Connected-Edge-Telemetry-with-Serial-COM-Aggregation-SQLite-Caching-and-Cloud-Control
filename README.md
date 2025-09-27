@@ -1,4 +1,4 @@
-# IRP Edge Gateway (Qt/C++): Threaded COM Telemetry + SQLite + WebSocket Control
+# ERP Edge Gateway (Qt/C++): Threaded COM Telemetry + SQLite + WebSocket Control
 
 A production-style Qt/C++ edge client that ingests newline-delimited sensor data from ESP32 devices over serial (COM), persists events to a local SQLite DB for offline resilience, and synchronizes with an IRP backend over a secure WebSocket. Designed for the Firefly ROC-RK3566-PC, but runs on Windows and Linux.
 
